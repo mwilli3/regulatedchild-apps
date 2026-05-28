@@ -64,11 +64,9 @@ Match these character-for-character:
 
 ## Open TODOs (need a human / real data)
 
-1. **Shopify product handles + domain.** The paid gates redirect to
-   `https://theregulatedchild.com/products/{behavior-decoder-workbook,in-the-moment-scripts-pack}`
-   (in each app's `App.jsx`, `PRODUCT_URLS`). Confirm the real handles AND the
-   correct domain — the brief mixes `theregulatedchild.com`, `regulatedchild.com`,
-   and `apps.regulatedchild.com`. Fix `PRODUCT_URLS` before launch.
+1. ~~**Shopify product handles + domain.**~~ Resolved: paid gates redirect to
+   `https://regulatedchild.com/products/{behavior-decoder-workbook,in-the-moment-scripts-pack}`
+   (`PRODUCT_URLS` in each app's `App.jsx`).
 2. **Product titles.** Set `DECODER_PRODUCT_TITLE` / `SCRIPTS_PRODUCT_TITLE` to
    the exact Shopify product titles (verify-purchase matches line-item titles).
 3. **Repo + first push** (see below) — this project was scaffolded in a sandbox

@@ -501,11 +501,9 @@ function EscalationLibrary() {
 }
 
 /* ── Purchase gate (verification logic unchanged; editorial restyle) ── */
-// TODO(handoff): confirm the real Shopify product handles + domain
-// (theregulatedchild.com vs regulatedchild.com) before launch.
 const PRODUCT_URLS = {
-  research: "https://theregulatedchild.com/products/in-the-moment-scripts-pack",
-  scripts: "https://theregulatedchild.com/products/in-the-moment-scripts-pack",
+  research: "https://regulatedchild.com/products/in-the-moment-scripts-pack",
+  scripts: "https://regulatedchild.com/products/in-the-moment-scripts-pack",
 };
 
 function PurchaseGate({ productId, productName, onVerified }) {
