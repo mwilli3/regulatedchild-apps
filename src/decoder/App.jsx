@@ -1077,11 +1077,9 @@ function RegulationClock() {
 }
 
 // === MAIN ===
-// TODO(handoff): confirm the real Shopify product handles + domain
-// (theregulatedchild.com vs regulatedchild.com) before launch.
 const PRODUCT_URLS = {
-  workbook: "https://theregulatedchild.com/products/behavior-decoder-workbook",
-  decoder: "https://theregulatedchild.com/products/behavior-decoder-workbook",
+  workbook: "https://regulatedchild.com/products/behavior-decoder-workbook",
+  decoder: "https://regulatedchild.com/products/behavior-decoder-workbook",
 };
 
 function PurchaseGate({ productId, productName, onVerified }) {
