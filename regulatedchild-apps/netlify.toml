@@ -1,0 +1,45 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Clean paths -> built HTML entries
+[[redirects]]
+  from = "/body"
+  to = "/body.html"
+  status = 200
+[[redirects]]
+  from = "/coregulation"
+  to = "/coregulation.html"
+  status = 200
+[[redirects]]
+  from = "/quiz"
+  to = "/quiz.html"
+  status = 200
+[[redirects]]
+  from = "/scripts-free"
+  to = "/scripts-free.html"
+  status = 200
+[[redirects]]
+  from = "/decoder-free"
+  to = "/decoder-free.html"
+  status = 200
+[[redirects]]
+  from = "/decoder"
+  to = "/decoder.html"
+  status = 200
+[[redirects]]
+  from = "/scripts"
+  to = "/scripts.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
