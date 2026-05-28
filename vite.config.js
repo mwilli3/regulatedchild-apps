@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        index: resolve(__dirname, "index.html"),
         body: resolve(__dirname, "body.html"),
         coregulation: resolve(__dirname, "coregulation.html"),
         quiz: resolve(__dirname, "quiz.html"),
