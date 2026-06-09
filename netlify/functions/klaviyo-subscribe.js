@@ -70,15 +70,54 @@ export const handler = async (event) => {
   const apiKey = process.env.KLAVIYO_PRIVATE_API_KEY;
   if (!apiKey) return json(500, { ok: false, message: "Email signup is not configured." });
 
+  const klaviyoHeaders = {
+    "Authorization": `Klaviyo-API-Key ${apiKey}`,
+    "revision": "2024-10-15",
+    "accept": "application/json",
+    "content-type": "application/json",
+  };
+
+  // Best-effort: create/update the profile to capture name + properties. The
+  // bulk-subscribe endpoint below only accepts email/phone/subscriptions, so
+  // name and custom properties must be set via the Profiles API. A failure here
+  // must NOT block the subscription, so it's wrapped and ignored.
+  const upsertProfile = async () => {
+    const attributes = {
+      email,
+      ...(firstName ? { first_name: firstName } : {}),
+      ...(lastName ? { last_name: lastName } : {}),
+      properties: { source: "trc-apps", last_app: app },
+    };
+    try {
+      const create = await fetch("https://a.klaviyo.com/api/profiles/", {
+        method: "POST",
+        headers: klaviyoHeaders,
+        body: JSON.stringify({ data: { type: "profile", attributes } }),
+      });
+      if (create.status === 409) {
+        // Profile already exists — patch it by the returned duplicate id.
+        const dup = await create.json().catch(() => null);
+        const id = dup?.errors?.[0]?.meta?.duplicate_profile_id;
+        if (id) {
+          await fetch(`https://a.klaviyo.com/api/profiles/${id}/`, {
+            method: "PATCH",
+            headers: klaviyoHeaders,
+            body: JSON.stringify({ data: { type: "profile", id, attributes } }),
+          });
+        }
+      }
+    } catch (e) {
+      console.error("klaviyo profile upsert failed (non-blocking)", e?.message);
+    }
+  };
+
   try {
+    await upsertProfile();
+
+    // Consent + list membership. Only email/phone/subscriptions are valid here.
     const r = await fetch("https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/", {
       method: "POST",
-      headers: {
-        "Authorization": `Klaviyo-API-Key ${apiKey}`,
-        "revision": "2024-10-15",
-        "accept": "application/json",
-        "content-type": "application/json",
-      },
+      headers: klaviyoHeaders,
       body: JSON.stringify({
         data: {
           type: "profile-subscription-bulk-create-job",
@@ -88,10 +127,7 @@ export const handler = async (event) => {
                 type: "profile",
                 attributes: {
                   email,
-                  ...(firstName ? { first_name: firstName } : {}),
-                  ...(lastName ? { last_name: lastName } : {}),
                   subscriptions: { email: { marketing: { consent: "SUBSCRIBED" } } },
-                  properties: { source: "trc-apps", last_app: app },
                 },
               }],
             },
