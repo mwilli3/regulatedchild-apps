@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { subscribeFree, isSubscribed } from "../lib/subscribeFree.js";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -253,7 +254,16 @@ function Gate({ onSubmit }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const ok = email.includes("@") && email.includes(".");
-  const submit = () => ok && onSubmit({ name: name || "there", email });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async () => {
+    if (!ok || submitting) return;
+    setSubmitting(true); setError("");
+    const res = await subscribeFree({ app: "quiztrc", name: name.trim(), email: email.trim() });
+    if (res.ok) { onSubmit({ name: name || "there", email }); return; }
+    setError(res.message);
+    setSubmitting(false);
+  };
 
   const inputStyle = {
     width: "100%", padding: "13px 0", borderRadius: 0, border: "none",
@@ -294,11 +304,12 @@ function Gate({ onSubmit }) {
             onKeyDown={e => e.key === "Enter" && submit()}
             onFocus={e => e.target.style.borderColor = C.brand} onBlur={e => e.target.style.borderColor = C.line}
             style={{ ...inputStyle, marginBottom: 30 }} />
-          <button onClick={submit} disabled={!ok} style={{
+          <button onClick={submit} disabled={!ok || submitting} style={{
             width: "100%", padding: "17px", borderRadius: 14, border: "none", fontSize: 16, fontWeight: 600, fontFamily: UI,
-            cursor: ok ? "pointer" : "default", background: ok ? C.brand : C.line, color: ok ? "white" : C.muted,
+            cursor: ok && !submitting ? "pointer" : "default", background: ok && !submitting ? C.brand : C.line, color: ok && !submitting ? "white" : C.muted,
             letterSpacing: ".01em", transition: `all .3s ${EASE}`,
-          }}>Start the quiz</button>
+          }}>{submitting ? "Sending…" : "Start the quiz"}</button>
+          {error && <p style={{ marginTop: 14, fontSize: 13, color: C.brand, lineHeight: 1.5 }}>{error}</p>}
         </div>
 
         <div className="rc-rise" style={{ animationDelay: ".3s", display: "flex", flexWrap: "wrap", gap: "10px 22px", marginTop: 34, paddingTop: 26, borderTop: `1px solid ${C.line}` }}>
@@ -496,7 +507,7 @@ function ResultScreen({ profileKey }) {
 
 /* ── App ──────────────────────────────────────────────────────────── */
 export default function RegulationProfileQuiz() {
-  const [screen, setScreen] = useState("gate");
+  const [screen, setScreen] = useState(() => isSubscribed("quiztrc") ? "quiz" : "gate");
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
 
