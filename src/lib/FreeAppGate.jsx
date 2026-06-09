@@ -69,7 +69,7 @@ export function FreeAppGate({ appId, appName, kicker, lede, cta, children }) {
         return;
       }
       if (d.notLive) { setStatus("notLive"); return; }
-      setError(d.message || "Something went wrong. Please try again.");
+      setError((d.message || "Something went wrong. Please try again.") + (d.detail ? ` [${d.detail}]` : ""));
     } catch {
       setError("Network error. Please try again.");
     }
