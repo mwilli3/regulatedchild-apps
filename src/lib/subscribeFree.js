@@ -27,7 +27,7 @@ export async function subscribeFree({ app, name, email }) {
       return { ok: true };
     }
     if (d.notLive) return { ok: false, notLive: true, message: d.message || "This tool isn't live yet." };
-    return { ok: false, message: (d.message || "Sign-up couldn't complete. Please try again.") + (d.detail ? ` [${d.detail}]` : "") };
+    return { ok: false, message: d.message || "Sign-up couldn't complete. Please try again." };
   } catch {
     return { ok: false, message: "Network error. Please try again." };
   }

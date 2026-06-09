@@ -141,18 +141,15 @@ export const handler = async (event) => {
     });
 
     if (r.status >= 200 && r.status < 300) return json(200, { ok: true });
-    // Klaviyo error - log full detail server-side; expose a short, non-sensitive
-    // `detail` (status + Klaviyo error title) to help diagnose from the Network tab.
-    let detail = `klaviyo ${r.status}`;
+    // Klaviyo error - log full detail to the Netlify function log, return a
+    // friendly message to the client.
     try {
       const body = await r.json();
       console.error("klaviyo-subscribe error", r.status, JSON.stringify(body));
-      const first = body?.errors?.[0];
-      if (first) detail = `klaviyo ${r.status}: ${first.title || ""}${first.detail ? " — " + first.detail : ""}`.trim();
     } catch {
       console.error("klaviyo-subscribe error", r.status, "(no JSON body)");
     }
-    return json(502, { ok: false, message: "Sign-up couldn't complete. Please try again.", detail });
+    return json(502, { ok: false, message: "Sign-up couldn't complete. Please try again." });
   } catch (e) {
     console.error("klaviyo-subscribe network error", e?.message);
     return json(502, { ok: false, message: "Network error. Please try again." });
