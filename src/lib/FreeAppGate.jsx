@@ -30,9 +30,12 @@ const FontLink = () => (
 
 export function FreeAppGate({ appId, appName, kicker, lede, cta, children }) {
   const [status, setStatus] = useState("checking"); // checking | gate | notLive | unlocked
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const ready = name.trim() && email.trim();
 
   useEffect(() => {
     try {
@@ -50,18 +53,18 @@ export function FreeAppGate({ appId, appName, kicker, lede, cta, children }) {
   }, [appId]);
 
   const submit = async () => {
-    if (!email.trim() || submitting) return;
+    if (!ready || submitting) return;
     setSubmitting(true);
     setError("");
     try {
       const r = await fetch("/.netlify/functions/klaviyo-subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ app: appId, email: email.trim() }),
+        body: JSON.stringify({ app: appId, name: name.trim(), email: email.trim() }),
       });
       const d = await r.json();
       if (d.ok) {
-        try { localStorage.setItem(STORAGE_KEY(appId), JSON.stringify({ email: email.trim(), ts: Date.now() })); } catch {}
+        try { localStorage.setItem(STORAGE_KEY(appId), JSON.stringify({ name: name.trim(), email: email.trim(), ts: Date.now() })); } catch {}
         setStatus("unlocked");
         return;
       }
@@ -109,17 +112,26 @@ export function FreeAppGate({ appId, appName, kicker, lede, cta, children }) {
         <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: "clamp(32px, 9vw, 46px)", lineHeight: 1.05, letterSpacing: "-0.01em", margin: "0 0 14px" }}>{appName}</h1>
         <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.6, margin: "0 0 32px", maxWidth: "34ch" }}>{lede || "Enter your email to get instant access. We'll also send you a copy."}</p>
 
+        <label style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".02em", color: C.muted, display: "block", marginBottom: 4 }}>Your name</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && ready && submit()}
+          placeholder="First name"
+          onFocus={(e) => (e.target.style.borderColor = C.brand)}
+          onBlur={(e) => (e.target.style.borderColor = C.line)}
+          style={{ width: "100%", padding: "13px 0", border: "none", borderBottom: `1.5px solid ${C.line}`, fontSize: 16, fontFamily: UI, color: C.text, background: "transparent", outline: "none", marginBottom: 22, boxSizing: "border-box", transition: "border-color .3s" }}
+        />
+
         <label style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".02em", color: C.muted, display: "block", marginBottom: 4 }}>Email address</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && email.trim() && submit()}
+          onKeyDown={(e) => e.key === "Enter" && ready && submit()}
           placeholder="your@email.com"
           onFocus={(e) => (e.target.style.borderColor = C.brand)}
           onBlur={(e) => (e.target.style.borderColor = C.line)}
           style={{ width: "100%", padding: "13px 0", border: "none", borderBottom: `1.5px solid ${C.line}`, fontSize: 16, fontFamily: UI, color: C.text, background: "transparent", outline: "none", marginBottom: 26, boxSizing: "border-box", transition: "border-color .3s" }}
         />
 
-        <button onClick={submit} disabled={!email.trim() || submitting}
-          style={{ width: "100%", padding: "16px", borderRadius: 14, border: "none", fontSize: 16, fontWeight: 600, fontFamily: UI, cursor: email.trim() && !submitting ? "pointer" : "default", background: email.trim() && !submitting ? C.brand : C.line, color: email.trim() && !submitting ? "white" : C.muted, letterSpacing: ".01em" }}
+        <button onClick={submit} disabled={!ready || submitting}
+          style={{ width: "100%", padding: "16px", borderRadius: 14, border: "none", fontSize: 16, fontWeight: 600, fontFamily: UI, cursor: ready && !submitting ? "pointer" : "default", background: ready && !submitting ? C.brand : C.line, color: ready && !submitting ? "white" : C.muted, letterSpacing: ".01em" }}
         >
           {submitting ? "Sending…" : (cta || "Get instant access")}
         </button>

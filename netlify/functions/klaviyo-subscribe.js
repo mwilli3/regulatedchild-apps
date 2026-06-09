@@ -55,9 +55,14 @@ export const handler = async (event) => {
 
   const app = String(payload.app || "").toLowerCase();
   const email = String(payload.email || "").trim().toLowerCase();
+  const name = String(payload.name || "").trim();
 
   if (!APP_LIST_ENV[app]) return json(400, { ok: false, message: "Unknown app." });
   if (!email || !email.includes("@")) return json(400, { ok: false, message: "Enter a valid email." });
+
+  // Split a single "name" field into first / last for the Klaviyo profile.
+  const [firstName, ...restName] = name.split(/\s+/).filter(Boolean);
+  const lastName = restName.join(" ");
 
   const listId = listIdFor(app);
   if (!listId) return json(200, { ok: false, notLive: true, message: "This tool isn't live yet." });
@@ -83,6 +88,8 @@ export const handler = async (event) => {
                 type: "profile",
                 attributes: {
                   email,
+                  ...(firstName ? { first_name: firstName } : {}),
+                  ...(lastName ? { last_name: lastName } : {}),
                   subscriptions: { email: { marketing: { consent: "SUBSCRIBED" } } },
                   properties: { source: "trc-apps", last_app: app },
                 },
@@ -98,9 +105,20 @@ export const handler = async (event) => {
     });
 
     if (r.status >= 200 && r.status < 300) return json(200, { ok: true });
-    // Klaviyo error - keep details server-side, send a friendly message.
-    return json(502, { ok: false, message: "Sign-up couldn't complete. Please try again." });
-  } catch {
+    // Klaviyo error - log full detail server-side; expose a short, non-sensitive
+    // `detail` (status + Klaviyo error title) to help diagnose from the Network tab.
+    let detail = `klaviyo ${r.status}`;
+    try {
+      const body = await r.json();
+      console.error("klaviyo-subscribe error", r.status, JSON.stringify(body));
+      const first = body?.errors?.[0];
+      if (first) detail = `klaviyo ${r.status}: ${first.title || ""}${first.detail ? " — " + first.detail : ""}`.trim();
+    } catch {
+      console.error("klaviyo-subscribe error", r.status, "(no JSON body)");
+    }
+    return json(502, { ok: false, message: "Sign-up couldn't complete. Please try again.", detail });
+  } catch (e) {
+    console.error("klaviyo-subscribe network error", e?.message);
     return json(502, { ok: false, message: "Network error. Please try again." });
   }
 };
