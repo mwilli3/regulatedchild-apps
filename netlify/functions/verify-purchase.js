@@ -3,13 +3,13 @@
 // "research"|"scripts". Returns { verified: boolean, message? }.
 //
 // Env (Netlify, TRC site):
-//   SHOPIFY_STORE_DOMAIN     e.g. theregulatedchild.myshopify.com
+//   SHOPIFY_STORE_DOMAIN     e.g. the-regulated-child.myshopify.com
 //   SHOPIFY_ACCESS_TOKEN     Admin API token with read_orders (TRC store)
 //   DECODER_PRODUCT_TITLE    exact Shopify product title for the Workbook
 //   SCRIPTS_PRODUCT_TITLE    exact Shopify product title for the Scripts Pack
 
 const ALLOW_ORIGIN = "https://apps.regulatedchild.com";
-const API_VERSION = "2024-10";
+const API_VERSION = "2026-04";
 
 const cors = {
   "Access-Control-Allow-Origin": ALLOW_ORIGIN,
@@ -49,24 +49,40 @@ export const handler = async (event) => {
   if (!domain || !token) return json(500, { verified: false, message: "Purchase verification is not configured." });
 
   try {
-    const url = `https://${domain}/admin/api/${API_VERSION}/orders.json` +
-      `?email=${encodeURIComponent(email)}&status=any&financial_status=paid&fields=id,email,financial_status,line_items&limit=250`;
-    const r = await fetch(url, { headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" } });
-    if (!r.ok) return json(502, { verified: false, message: "Could not reach the store. Please try again." });
+    const gql = `
+      query OrdersByEmail($q: String!) {
+        orders(first: 50, query: $q, sortKey: PROCESSED_AT, reverse: true) {
+          edges { node {
+            id
+            email
+            displayFinancialStatus
+            lineItems(first: 50) { edges { node { title } } }
+          } }
+        }
+      }`;
+    const r = await fetch(`https://${domain}/admin/api/${API_VERSION}/graphql.json`, {
+      method: "POST",
+      headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: gql, variables: { q: `email:${email}` } }),
+    });
+    if (!r.ok) return json(502, { verified: false, message: `Could not reach the store (status ${r.status}).` });
 
     const data = await r.json();
-    const orders = Array.isArray(data.orders) ? data.orders : [];
+    if (data.errors) return json(502, { verified: false, message: `Shopify error: ${data.errors[0]?.message || "unknown"}` });
+
+    const orders = data?.data?.orders?.edges?.map((e) => e.node) || [];
     const want = wantedTitle.trim().toLowerCase();
+    const PAID = new Set(["PAID", "PARTIALLY_PAID", "PARTIALLY_REFUNDED"]);
 
     const verified = orders.some((o) =>
-      ["paid", "partially_paid", "partially_refunded"].includes(o.financial_status) &&
-      (o.line_items || []).some((li) => (li.title || "").trim().toLowerCase().includes(want))
+      PAID.has(o.displayFinancialStatus) &&
+      (o.lineItems?.edges || []).some((li) => (li.node.title || "").trim().toLowerCase().includes(want))
     );
 
     return json(200, verified
       ? { verified: true }
       : { verified: false, message: "No matching purchase found for this email." });
-  } catch {
-    return json(502, { verified: false, message: "Verification error. Please try again." });
+  } catch (e) {
+    return json(502, { verified: false, message: `Verification error: ${e.message || "unknown"}` });
   }
 };
