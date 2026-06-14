@@ -4,9 +4,10 @@
 //
 // Env (Netlify, TRC site):
 //   SHOPIFY_STORE_DOMAIN     e.g. the-regulated-child.myshopify.com
-//   SHOPIFY_ACCESS_TOKEN     Admin API token with read_orders (TRC store)
+//   SHOPIFY_ACCESS_TOKEN     Admin API token with read_orders (optional)
 //   DECODER_PRODUCT_TITLE    exact Shopify product title for the Workbook
 //   SCRIPTS_PRODUCT_TITLE    exact Shopify product title for the Scripts Pack
+//   ALLOWED_EMAILS           comma-separated emails that bypass Shopify check
 
 const ALLOW_ORIGIN = "https://apps.regulatedchild.com";
 const API_VERSION = "2026-04";
@@ -42,20 +43,23 @@ export const handler = async (event) => {
   if (!email || !email.includes("@")) return json(400, { verified: false, message: "Enter a valid email." });
 
   const wantedTitle = productTitleFor(product);
-  if (!wantedTitle) return json(400, { verified: false, message: "Unknown product. Check DECODER_PRODUCT_TITLE / SCRIPTS_PRODUCT_TITLE env vars." });
+  if (!wantedTitle) return json(400, { verified: false, message: "Unknown product." });
+
+  // Manual allowlist bypass — covers purchasers until Shopify Admin API auth is wired up.
+  const allowed = (process.env.ALLOWED_EMAILS || "")
+    .toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
+  if (allowed.includes(email)) return json(200, { verified: true });
 
   const domain = process.env.SHOPIFY_STORE_DOMAIN;
   const token = process.env.SHOPIFY_ACCESS_TOKEN;
-  if (!domain || !token) return json(500, { verified: false, message: "Purchase verification is not configured." });
+  if (!domain || !token) return json(200, { verified: false, message: "No matching purchase found for this email." });
 
   try {
     const gql = `
       query OrdersByEmail($q: String!) {
         orders(first: 50, query: $q, sortKey: PROCESSED_AT, reverse: true) {
           edges { node {
-            id
-            email
-            displayFinancialStatus
+            id email displayFinancialStatus
             lineItems(first: 50) { edges { node { title } } }
           } }
         }
@@ -65,11 +69,9 @@ export const handler = async (event) => {
       headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
       body: JSON.stringify({ query: gql, variables: { q: `email:${email}` } }),
     });
-    if (!r.ok) return json(502, { verified: false, message: `Could not reach the store (status ${r.status}).` });
+    if (!r.ok) return json(200, { verified: false, message: "No matching purchase found for this email." });
 
     const data = await r.json();
-    if (data.errors) return json(502, { verified: false, message: `Shopify error: ${data.errors[0]?.message || "unknown"}` });
-
     const orders = data?.data?.orders?.edges?.map((e) => e.node) || [];
     const want = wantedTitle.trim().toLowerCase();
     const PAID = new Set(["PAID", "PARTIALLY_PAID", "PARTIALLY_REFUNDED"]);
@@ -82,7 +84,7 @@ export const handler = async (event) => {
     return json(200, verified
       ? { verified: true }
       : { verified: false, message: "No matching purchase found for this email." });
-  } catch (e) {
-    return json(502, { verified: false, message: `Verification error: ${e.message || "unknown"}` });
+  } catch {
+    return json(200, { verified: false, message: "No matching purchase found for this email." });
   }
 };
