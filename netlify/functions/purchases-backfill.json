@@ -1,0 +1,4 @@
+{
+  "_note": "Past Shopify orders, seeded once via the MCP backfill. Future orders land in Netlify Blobs via shopify-order-webhook. Email -> products owned.",
+  "emails": {}
+}
