@@ -43,3 +43,9 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    # connect-src 'self' keeps the sensitive client-stored tracker data from being
+    # exfiltrated to any third party. All real traffic (verify-purchase, ai-proxy,
+    # klaviyo) is same-origin /.netlify/functions/*. style-src 'unsafe-inline' is
+    # required by React's inline styles + injected <style>; Google Fonts is allowed.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"

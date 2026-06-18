@@ -21,15 +21,31 @@ try {
 }
 
 const ALLOW_ORIGIN = "https://apps.regulatedchild.com";
+const MAX_PER_HOUR = 30;
 
 const cors = {
   "Access-Control-Allow-Origin": ALLOW_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json",
+  // Personal verification result — never cache in any proxy/CDN.
+  "Cache-Control": "no-store",
 };
 
 const json = (statusCode, body) => ({ statusCode, headers: cors, body: JSON.stringify(body) });
+
+// Best-effort in-memory rate limit (per warm instance). Blocks email
+// enumeration — probing which addresses are paying customers — without
+// affecting a real buyer, who verifies at most a handful of times.
+const hits = new Map();
+function rateLimited(ip) {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000;
+  const arr = (hits.get(ip) || []).filter((t) => now - t < windowMs);
+  arr.push(now);
+  hits.set(ip, arr);
+  return arr.length > MAX_PER_HOUR;
+}
 
 function productKey(input) {
   const p = String(input || "").toLowerCase();
@@ -41,6 +57,9 @@ function productKey(input) {
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return json(405, { verified: false, message: "Method not allowed" });
+
+  const ip = (event.headers["x-nf-client-connection-ip"] || event.headers["x-forwarded-for"] || "unknown").split(",")[0].trim();
+  if (rateLimited(ip)) return json(429, { verified: false, message: "Too many attempts. Please try again later." });
 
   let email, product;
   try {
