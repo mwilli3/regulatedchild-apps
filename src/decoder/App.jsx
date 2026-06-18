@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { readLocal } from "../lib/clearData";
 import { ManageData } from "../lib/ManageData";
+import { useAiConsent, AiConsentProvider, useAiConsentRequest } from "../lib/aiConsent.jsx";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -245,6 +246,7 @@ function DecodeThisBehavior() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const requestAi = useAiConsentRequest();
   return (
     <div style={{ background: C.surface, borderRadius: 16, border: `1px solid ${C.line}`, padding: "20px", marginBottom: 16 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -253,11 +255,11 @@ function DecodeThisBehavior() {
       </div>
       <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.55, marginBottom: 12 }}>Describe what just happened and the AI will map it to the nervous system state and suggest what your child needs.</p>
       <textarea value={input} onChange={e => setInput(e.target.value)} rows={3} placeholder="e.g. My 6-year-old threw his backpack and screamed when I asked about homework..." style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 14, fontFamily: UI, color: C.text, background: C.bg, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 10 }} />
-      <button disabled={!input.trim() || loading} onClick={async () => {
+      <button disabled={!input.trim() || loading} onClick={() => requestAi(async () => {
         setLoading(true);
         const r = await askAI(`A parent describes this behavior from their child:\n\n"${input}"\n\nBased on the Behavior Decoder framework:\n1. Identify the most likely nervous system state (Fight, Flight, Freeze/Shutdown, or Fawn)\n2. Explain what the body is trying to accomplish (the function)\n3. Give 2-3 specific things the parent should do right now\n4. Note what this behavior is NOT (the common misread)\n\nKeep it warm, direct, and under 250 words.`);
         setResult(r); setLoading(false);
-      }} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5, transition: `all .25s ${EASE}` }}>{loading ? "Analyzing..." : "Decode this"}</button>
+      })} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5, transition: `all .25s ${EASE}` }}>{loading ? "Analyzing..." : "Decode this"}</button>
       {result && <AIResult>{result}</AIResult>}
     </div>
   );
@@ -266,6 +268,7 @@ function DecodeThisBehavior() {
 function PatternAnalyzer({ tracker, reflections }) {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const requestAi = useAiConsentRequest();
   const filled = tracker.filter(r => r.behavior || r.before);
   if (filled.length < 3) return (
     <div style={{ background: C.brandTint, borderRadius: 14, padding: "14px 16px", marginTop: 16, border: `1px solid ${C.brand}1f` }}>
@@ -277,13 +280,13 @@ function PatternAnalyzer({ tracker, reflections }) {
     <div style={{ background: C.surface, borderRadius: 16, border: `1px solid ${C.line}`, padding: "20px", marginTop: 16 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><span style={{ fontSize: 16, fontWeight: 600, color: C.brand, fontFamily: UI }}>Pattern Analyzer</span><AIBadge /></div>
       <p style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>AI will analyze your tracker entries and identify patterns in your child’s nervous system states, peak risk times, and what’s working.</p>
-      <button disabled={loading} onClick={async () => {
+      <button disabled={loading} onClick={() => requestAi(async () => {
         setLoading(true);
         const entries = filled.map(r => `${r.date || "undated"}: Time/Setting: ${r.time || "not noted"} | Before: ${r.before || "not noted"} | State: ${r.state || "not noted"} | Behavior: ${r.behavior || "not noted"} | Helped/Didn't: ${r.helped || "not noted"}`).join("\n");
         const refs = reflections.q1 || reflections.q2 || reflections.q3 ? `\n\nParent reflections:\nQ1 (timing patterns): ${reflections.q1 || "not yet answered"}\nQ2 (antecedent patterns): ${reflections.q2 || "not yet answered"}\nQ3 (what helped): ${reflections.q3 || "not yet answered"}` : "";
         const r = await askAI(`Analyze this parent's Antecedent Tracker data (${filled.length} entries) and provide a personalized pattern report:\n\n${entries}${refs}\n\nProvide:\n1. PATTERNS IDENTIFIED: What nervous system states appear most often? What times/situations are highest risk?\n2. WHAT'S WORKING: Based on what helped, what regulatory strategies seem effective for this child?\n3. WHAT TO TRY NEXT: 2-3 specific, actionable suggestions based on the patterns\n4. ONE THING TO WATCH: Something the parent may not have noticed in their data\n\nKeep it warm, specific to their data, and under 300 words.`);
         setResult(r); setLoading(false);
-      }} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Analyzing your data..." : "Analyze my patterns"}</button>
+      })} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Analyzing your data..." : "Analyze my patterns"}</button>
       {result && <AIResult>{result}</AIResult>}
     </div>
   );
@@ -292,6 +295,7 @@ function PatternAnalyzer({ tracker, reflections }) {
 function SignatureCoach({ sig }) {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const requestAi = useAiConsentRequest();
   const filled = Object.values(sig).filter(v => v.trim()).length;
   if (filled < 4) return (
     <div style={{ background: C.brandTint, borderRadius: 14, padding: "14px 16px", marginTop: 16, border: `1px solid ${C.brand}1f` }}>
@@ -302,12 +306,12 @@ function SignatureCoach({ sig }) {
   return (
     <div style={{ background: C.surface, borderRadius: 16, border: `1px solid ${C.line}`, padding: "20px", marginTop: 16 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><span style={{ fontSize: 16, fontWeight: 600, color: C.brand, fontFamily: UI }}>Signature Coach</span><AIBadge /></div>
-      <button disabled={loading} onClick={async () => {
+      <button disabled={loading} onClick={() => requestAi(async () => {
         setLoading(true);
         const data = Object.entries(sig).filter(([,v]) => v.trim()).map(([k,v]) => `${k}: ${v}`).join("\n");
         const r = await askAI(`Review this parent's State Signature for their child and provide coaching:\n\n${data}\n\nProvide:\n1. STRENGTHS: What this parent is already noticing well\n2. GAPS TO EXPLORE: Fields that are missing or could be more specific, with guiding questions\n3. INSIGHT: One pattern or connection in their observations they may not have noticed\n4. NEXT STEP: One specific thing to observe this week\n\nKeep it warm, encouraging, and under 250 words.`);
         setResult(r); setLoading(false);
-      }} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Reviewing..." : "Coach my signature"}</button>
+      })} style={{ padding: "11px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 13, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Reviewing..." : "Coach my signature"}</button>
       {result && <AIResult>{result}</AIResult>}
     </div>
   );
@@ -659,6 +663,7 @@ function ReportSection() {
   const [report, setReport] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const requestAi = useAiConsentRequest();
 
   if (!tLoaded || !sLoaded || !rLoaded || !cLoaded) return <p style={{ color: C.muted }}>Loading your data...</p>;
 
@@ -840,7 +845,7 @@ Stay under 500 words. Do not invent data — only use what the parent provided.`
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button disabled={loading} onClick={generateAIReport} style={{ padding: "12px 20px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.6 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Generating report..." : "Generate AI-enhanced report"}</button>
+              <button disabled={loading} onClick={() => requestAi(generateAIReport)} style={{ padding: "12px 20px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: loading ? "default" : "pointer", opacity: loading ? 0.6 : 1, transition: `all .25s ${EASE}` }}>{loading ? "Generating report..." : "Generate AI-enhanced report"}</button>
               <button onClick={() => { setReport(buildStructuredReport()); }} style={{ padding: "12px 20px", borderRadius: 12, border: `1px solid ${C.line}`, background: C.surface, color: C.muted, fontSize: 14, fontWeight: 500, fontFamily: UI, cursor: "pointer" }}>Use structured data only</button>
             </div>
           </div>
@@ -1174,6 +1179,21 @@ export default function BehaviorDecoderWorkbook() {
   const [decoderFilter, setDecoderFilter] = useState(null);
   const ref = useRef(null);
 
+  const { request: requestAiConsent, Modal: AiConsentModal } = useAiConsent({
+    consentKey: "trc_ai_consent_decoder",
+    appLabel: "Behavior Decoder Workbook",
+    accent: C.brand, surface: C.surface, ink: C.text, muted: C.muted,
+    serif: DISPLAY, sans: UI,
+    heading: "Before we analyze",
+    paragraphs: [
+      "Your structured observations AND the reflections you’ve written will be sent to Anthropic for pattern analysis. Your email stays on your device.",
+      "If you’ve written your child’s name into your reflections, that text will be included in the request. Consider using a first initial or nickname.",
+      "Anthropic does not train models on this data. They may retain it for up to 30 days for abuse monitoring. We’re currently pursuing a Zero Data Retention agreement that would eliminate this 30-day window.",
+      "If our system detects language suggesting abuse, self-harm, or a child in immediate danger, the response will surface crisis-appropriate guidance instead of the usual analysis.",
+    ],
+    privacyUrl: "https://regulatedchild.com/policies/privacy-policy",
+  });
+
   useEffect(() => {
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
     const fresh = (d) => d && d.verified && d.ts && Date.now() - d.ts < SEVEN_DAYS;
@@ -1206,6 +1226,7 @@ export default function BehaviorDecoderWorkbook() {
   ];
 
   return (
+    <AiConsentProvider value={requestAiConsent}>
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: UI, color: C.text }}>
       <FontLink />
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.line}`, position: "sticky", top: 0, zIndex: 10 }}>
@@ -1295,10 +1316,12 @@ export default function BehaviorDecoderWorkbook() {
                 { label: "State signature, reflections & clock", value: otherSaved ? "saved" : "empty" },
               ];
             }}
-            deleteKeys={["bdw-tracker", "bdw-reflections", "bdw-signature", "bdw-clock"]}
+            deleteKeys={["bdw-tracker", "bdw-reflections", "bdw-signature", "bdw-clock", "trc_ai_consent_decoder"]}
           />
         </div>
       </div>
     </div>
+    {AiConsentModal}
+    </AiConsentProvider>
   );
 }

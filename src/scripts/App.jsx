@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { readLocal } from "../lib/clearData";
 import { ManageData } from "../lib/ManageData";
+import { useAiConsent, AiConsentProvider, useAiConsentRequest } from "../lib/aiConsent.jsx";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -194,6 +195,7 @@ function WhatDoISay() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const requestAi = useAiConsentRequest();
   return (
     <div style={{ background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`, padding: "22px 20px", marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10, flexWrap: "wrap" }}>
@@ -202,11 +204,11 @@ function WhatDoISay() {
       </div>
       <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginBottom: 14, fontFamily: UI }}>Describe the moment and the AI will recommend the right script with delivery guidance specific to your situation.</p>
       <textarea value={input} onChange={e => setInput(e.target.value)} rows={3} placeholder="e.g. My 4-year-old just went completely silent after I raised my voice. She won't look at me..." style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 14, fontFamily: UI, color: C.text, background: C.bg, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 12 }} />
-      <button disabled={!input.trim() || loading} onClick={async () => {
+      <button disabled={!input.trim() || loading} onClick={() => requestAi(async () => {
         setLoading(true);
         const r = await askAI(`A parent describes this moment:\n\n"${input}"\n\nBased on the 20 scripts in the In-the-Moment Scripts Pack:\n1. Identify the nervous system state\n2. Recommend the specific script number and exact words\n3. Give specific delivery instructions for THIS moment (voice, body position, timing)\n4. Suggest one adaptation based on the details they shared\n5. Remind them of the one rule: regulate yourself first\n\nKeep it warm, direct, and under 250 words. Start with the script they need.`);
         setResult(r); setLoading(false);
-      }} style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5, transition: `all .3s ${EASE}` }}>{loading ? "Finding the right script..." : "Find my script"}</button>
+      })} style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: C.brand, color: "white", fontSize: 14, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5, transition: `all .3s ${EASE}` }}>{loading ? "Finding the right script..." : "Find my script"}</button>
       {result && <TintBlock label="Your script" color={C.brand} tint={BRAND_TINT} style={{ marginTop: 16 }}><p style={{ fontSize: 14, color: C.text, lineHeight: 1.65, margin: 0, whiteSpace: "pre-wrap", fontFamily: UI }}>{result}</p></TintBlock>}
     </div>
   );
@@ -217,16 +219,17 @@ function ScriptPersonalizer({ script, catColor }) {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const requestAi = useAiConsentRequest();
   if (!show) return <button onClick={() => setShow(true)} style={{ padding: "7px 14px", borderRadius: 10, border: `1px solid ${C.line}`, background: "transparent", fontSize: 11.5, fontWeight: 600, fontFamily: UI, color: C.brand, cursor: "pointer", marginTop: 10, letterSpacing: ".02em" }}>Personalize this script with AI</button>;
   return (
     <div style={{ marginTop: 12, background: C.bg, borderRadius: 12, padding: "14px", border: `1px solid ${C.line}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><span style={{ fontSize: 12.5, fontWeight: 600, color: C.brand, fontFamily: UI }}>Personalize this script</span><AIBadge /></div>
       <input value={input} onChange={e => setInput(e.target.value)} placeholder="Child's age, what just happened, their typical pattern..." style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: UI, color: C.text, background: C.surface, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
-      <button disabled={!input.trim() || loading} onClick={async () => {
+      <button disabled={!input.trim() || loading} onClick={() => requestAi(async () => {
         setLoading(true);
         const r = await askAI(`Personalize this script for a parent's specific situation:\n\nScript: ${script.script}\nOriginal adaptation guidance: ${script.adapt}\n\nParent's context: "${input}"\n\nProvide:\n1. The adapted version of the script for their child\n2. One specific delivery adjustment for their situation\n3. What to do immediately after saying it\n\nKeep it under 150 words.`);
         setResult(r); setLoading(false);
-      }} style={{ padding: "7px 16px", borderRadius: 10, border: "none", background: C.brand, color: "white", fontSize: 12, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5 }}>{loading ? "..." : "Personalize"}</button>
+      })} style={{ padding: "7px 16px", borderRadius: 10, border: "none", background: C.brand, color: "white", fontSize: 12, fontWeight: 600, fontFamily: UI, cursor: input.trim() && !loading ? "pointer" : "default", opacity: input.trim() && !loading ? 1 : 0.5 }}>{loading ? "..." : "Personalize"}</button>
       {result && <TintBlock label="Personalized" color={C.brand} tint={BRAND_TINT} style={{ marginTop: 10, borderRadius: 12 }}><p style={{ fontSize: 12.5, color: C.text, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", fontFamily: UI }}>{result}</p></TintBlock>}
     </div>
   );
@@ -597,6 +600,21 @@ export default function ScriptsPackResearch() {
   const [worked, setWorked] = useState([]);
   const ref = useRef(null);
 
+  const { request: requestAiConsent, Modal: AiConsentModal } = useAiConsent({
+    consentKey: "trc_ai_consent_scripts",
+    appLabel: "In-the-Moment Scripts Pack",
+    accent: C.brand, surface: C.surface, ink: C.text, muted: C.muted,
+    serif: DISPLAY, sans: UI,
+    heading: "Before we analyze",
+    paragraphs: [
+      "Your structured observations AND the reflections you’ve written will be sent to Anthropic for pattern analysis. Your email stays on your device.",
+      "If you’ve written your child’s name into your reflections, that text will be included in the request. Consider using a first initial or nickname.",
+      "Anthropic does not train models on this data. They may retain it for up to 30 days for abuse monitoring. We’re currently pursuing a Zero Data Retention agreement that would eliminate this 30-day window.",
+      "If our system detects language suggesting abuse, self-harm, or a child in immediate danger, the response will surface crisis-appropriate guidance instead of the usual analysis.",
+    ],
+    privacyUrl: "https://regulatedchild.com/policies/privacy-policy",
+  });
+
   useEffect(() => {
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
     const fresh = (d) => d && d.verified && d.ts && Date.now() - d.ts < SEVEN_DAYS;
@@ -652,6 +670,7 @@ export default function ScriptsPackResearch() {
   ];
 
   return (
+    <AiConsentProvider value={requestAiConsent}>
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: UI, color: C.text }}>
       <FontLink />
       <div style={{ padding: "14px 16px", background: C.surface, borderBottom: `1px solid ${C.line}`, position: "sticky", top: 0, zIndex: 100 }}>
@@ -802,10 +821,12 @@ export default function ScriptsPackResearch() {
                 { label: "Scripts marked as effective", value: n ? `${n} ${n === 1 ? "script" : "scripts"}` : "empty" },
               ];
             }}
-            deleteKeys={["rr-script-worked"]}
+            deleteKeys={["rr-script-worked", "trc_ai_consent_scripts"]}
           />
         </div>
       </div>
     </div>
+    {AiConsentModal}
+    </AiConsentProvider>
   );
 }
