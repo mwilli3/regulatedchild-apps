@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>App Privacy Policy · The Regulated Child</title>
+    <!--
+      Source of truth for the TRC apps' privacy policy.
+      Published at: https://regulatedchild.com/pages/app-privacy-policy
+      The consent modal in the paid apps (src/lib/aiConsent.jsx, wired in
+      src/decoder/App.jsx and src/scripts/App.jsx) links to that URL.
+      When the policy changes, update this file AND the published page, and bump
+      the "Last updated" date below.
+    -->
+    <style>
+      body { max-width: 760px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.6; color: #2b2018; }
+      h2 { margin-top: 2em; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #d8cfc7; padding: 8px 10px; text-align: left; }
+    </style>
+  </head>
+  <body>
+<p><em>Last updated: June 18, 2026</em></p>
+
+<p>This policy explains what data The Regulated Child collects, where it goes, and what you can do about it. We've tried to write it in plain English — no legalese. If anything here is unclear, email us at <a href="mailto:hello@regulatedchild.com">hello@regulatedchild.com</a>.</p>
+
+<p>A note on who this is for: The Regulated Child apps are built for parents and caregivers — the adult is the user. The content you enter often describes a <em>child</em> (your observations of their behavior). Section 8 explains how we treat that.</p>
+
+<h2>1. What we collect</h2>
+
+<p>When you use a Regulated Child app, three kinds of data are involved:</p>
+
+<h3>On your device only — never sent to us</h3>
+<ul>
+  <li>Your behavior tracker entries, state-signature notes, written reflections, regulation-clock notes, the scripts you mark as effective, and anything else you type or select in the apps. This lives only in your browser's local storage on your device. You can inspect or delete it at any time.</li>
+</ul>
+
+<h3>Sent to us</h3>
+<ul>
+  <li>Your email address — used to confirm your purchase and unlock the paid apps, and (only if you opt in through one of our free tools) to send you marketing.</li>
+  <li>A short-lived request count tied to your IP address, used only to rate-limit our functions and prevent abuse. It is held briefly in memory, not stored, and not linked to your identity.</li>
+</ul>
+
+<h3>Sent only when you click an AI button</h3>
+<ul>
+  <li>The structured observations and the freeform text you've written, sent for AI analysis. Your email and purchase identity are never included. See section 4 for exactly what this means.</li>
+</ul>
+
+<p>We do not use cookies. We do not run analytics. We do not store your AI prompts or AI responses on our servers.</p>
+
+<h2>2. How we use it</h2>
+
+<ul>
+  <li><strong>Your email</strong> verifies your purchase so the paid apps unlock, and is used for marketing only if you opted in. You can unsubscribe from marketing anytime via the link at the bottom of any email we've sent.</li>
+  <li><strong>The rate-limit count</strong> prevents abuse of our functions. It is not used for anything else and is not joined to your identity.</li>
+</ul>
+
+<p>We do not profile you, sell your data, or share it with advertisers.</p>
+
+<h2>3. Who we share data with</h2>
+
+<p>We use a small number of third-party services, each with a specific purpose:</p>
+
+<ul>
+  <li><strong>Anthropic</strong> — processes the content you send when you click an AI button. Anthropic does not train its models on API inputs. Inputs may be retained by Anthropic for up to 30 days for abuse monitoring. <em>We are currently pursuing a Zero Data Retention agreement with Anthropic that would eliminate this 30-day window.</em></li>
+  <li><strong>Klaviyo</strong> — sends marketing emails only if you opted in via one of our free apps. Klaviyo receives the email address and the name you provide, plus which app you signed up from.</li>
+  <li><strong>Shopify</strong> — processes purchases on regulatedchild.com. Shopify's own privacy policy governs that step. We receive only the email tied to your order.</li>
+  <li><strong>Netlify</strong> — hosts the apps and the supporting functions, and stores the email-to-purchase record that unlocks the paid apps. Receives network-level information (IP address, request metadata) inherent to serving any website.</li>
+  <li><strong>Google Fonts</strong> — the apps load typefaces from Google Fonts. Google receives standard network information (IP address, request metadata) when fonts load. No app content or email is sent.</li>
+</ul>
+
+<p>We do not sell your data. We do not share it with advertisers.</p>
+
+<h2>4. AI processing — what gets sent and what doesn't</h2>
+
+<p>Several features in the paid apps use AI to analyze what you enter — for example "Decode this behavior," "Analyze my patterns," "Coach my signature," and "Generate AI-enhanced report" in the Behavior Decoder Workbook, and "Find my script" and "Personalize this script" in the In-the-Moment Scripts Pack. Before your first AI request, the app shows you a consent screen describing what follows. Here is what happens:</p>
+
+<ul>
+  <li>Your structured observations <strong>and</strong> the reflections you've written are sent to Anthropic for pattern analysis. Your email stays on your device.</li>
+  <li>If you've written your child's name into your reflections, that text will be included in the request. Consider using a first initial or nickname.</li>
+  <li>Anthropic does not train models on this data. They may retain it for up to 30 days for abuse monitoring. We're currently pursuing a Zero Data Retention agreement that would eliminate this 30-day window.</li>
+  <li>If our system detects language suggesting abuse, self-harm, or a child in immediate danger, the response will surface crisis-appropriate guidance instead of the usual analysis.</li>
+</ul>
+
+<p>The AI is constrained by a system policy enforced in our code: it is instructed to frame behavior through a nervous-system lens, never to give clinical, diagnostic, medical, IEP, 504, or special-education guidance, and to avoid pathologizing language. Crisis language (such as references to self-harm, abuse, or a child in danger) is intercepted before any request reaches the AI, and we return crisis resources — call or text 988, text HOME to 741741, or call 911 in an emergency — instead of an AI analysis.</p>
+
+<p>If you do not want your data processed by an AI service, do not click the AI buttons. All other app features work without them.</p>
+
+<h2>5. Where your data lives</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Behavior tracker, state signature, reflections, regulation clock, marked scripts</td>
+      <td>Your device (browser local storage)</td>
+    </tr>
+    <tr>
+      <td>Email address tied to purchase</td>
+      <td>Netlify (our backend) and Shopify</td>
+    </tr>
+    <tr>
+      <td>Marketing-subscribed email and name</td>
+      <td>Klaviyo</td>
+    </tr>
+    <tr>
+      <td>AI request body</td>
+      <td>Transient at Anthropic (up to 30 days)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>6. Your rights and controls</h2>
+
+<ul>
+  <li><strong>Access:</strong> Open your browser's DevTools → Application → Local Storage to inspect any data stored by the apps.</li>
+  <li><strong>Delete on this device:</strong> Each paid app has a "Manage my data" link in the footer that wipes your tracking, notes, and AI-consent record from the device. Your purchase access is preserved, so you don't have to re-enter your email.</li>
+  <li><strong>Delete from our backend:</strong> Email us at <a href="mailto:hello@regulatedchild.com">hello@regulatedchild.com</a> and we will remove your email from the purchase record (and request deletion of your Klaviyo profile) within seven days.</li>
+  <li><strong>Opt out of marketing:</strong> Use the unsubscribe link in any email we've sent.</li>
+</ul>
+
+<p>If you live in the EU, UK, or California, you also have rights under GDPR or CCPA. Email us to exercise them.</p>
+
+<h2>7. Security</h2>
+
+<p>We take reasonable steps to keep your data safe:</p>
+
+<ul>
+  <li>All traffic to our apps is HTTPS-only, with HTTP Strict Transport Security enabled across subdomains.</li>
+  <li>A Content Security Policy restricts what the apps are allowed to connect to, which protects the data stored on your device.</li>
+  <li>A Permissions Policy disables camera, microphone, and location access.</li>
+  <li>Per-IP rate limits protect the AI and purchase-verification functions from abuse.</li>
+  <li>Purchase verification is handled server-side from a record populated by Shopify's order webhook.</li>
+  <li>We do not log AI prompts or responses on our servers, and errors from the AI service are sanitized before they reach you.</li>
+  <li>Crisis-language interception returns support resources instead of an AI analysis.</li>
+</ul>
+
+<h2>8. Children and the child you're describing</h2>
+
+<p>The Regulated Child apps are designed for adult parents and caregivers. We do not knowingly let anyone under 18 create an account or make a purchase, and we do not knowingly collect data directly from a child.</p>
+
+<p>Because these apps help you understand a child's behavior, the notes and reflections you write often describe your child. That content stays on your device and is never sent to us. It is sent to our AI provider only when you click an AI button. To protect your child's privacy, we recommend using a first initial or nickname rather than a full name in anything you type. If you believe a child has used the apps directly, email us and we will delete any associated data.</p>
+
+<h2>9. Changes to this policy</h2>
+
+<p>If we make material changes, we will update the "last updated" date at the top of this page and, where reasonable, notify users by email.</p>
+
+<h2>10. Contact</h2>
+
+<p>Questions, requests, or concerns: <a href="mailto:hello@regulatedchild.com">hello@regulatedchild.com</a>.</p>
+  </body>
+</html>
