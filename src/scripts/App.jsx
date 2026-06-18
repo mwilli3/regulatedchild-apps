@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { clearLocalData } from "../lib/clearData";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -789,6 +790,11 @@ export default function ScriptsPackResearch() {
           <ArcLogo size={20} />
           <a href="https://www.tiktok.com/@regulatedchild" target="_blank" rel="noopener" style={{ fontSize: 13, color: C.brand, textDecoration: "none", fontWeight: 600, fontFamily: UI, display: "block", marginTop: 8 }}>@regulatedchild</a>
           <p style={{ fontSize: 11, color: C.cite, fontStyle: "italic", marginTop: 8, fontFamily: UI }}>Educational content, not clinical advice. © The Regulated Child · regulatedchild.com</p>
+          <button onClick={async () => {
+            if (!confirm("This permanently clears your saved progress and sign-in on this device. Your purchase is not affected — you can sign back in with your email. Continue?")) return;
+            await clearLocalData(["rr-script-worked", "rc-access-research"]);
+            location.reload();
+          }} style={{ marginTop: 16, background: "none", border: "none", color: C.cite, fontSize: 11, fontFamily: UI, textDecoration: "underline", cursor: "pointer" }}>Clear my data on this device</button>
         </div>
       </div>
     </div>

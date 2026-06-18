@@ -3,6 +3,11 @@
 // TRC-scoped compliance: body mechanism before behavior, no clinical / IEP / 504
 // / SPED / diagnostic / treatment guidance, crisis interception, rate limiting.
 //
+// Privacy posture: parent prompts describe a child and are sensitive. This
+// function NEVER logs the prompt or echoes the provider's raw error body to the
+// client. Anthropic does not train on API inputs by default. Keep it that way —
+// do not add console.log(prompt) or return upstream error details to callers.
+//
 // Env (Netlify, TRC site):
 //   ANTHROPIC_API_KEY   required
 //   ANTHROPIC_MODEL     optional (default below)
@@ -16,6 +21,8 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json",
+  // Personal, sensitive AI output — never cache in any proxy/CDN.
+  "Cache-Control": "no-store",
 };
 const json = (statusCode, body) => ({ statusCode, headers: cors, body: JSON.stringify(body) });
 
@@ -96,8 +103,12 @@ export const handler = async (event) => {
       }),
     });
     if (!r.ok) {
+      // Log the upstream failure to the Netlify function log for debugging, but
+      // NEVER echo the provider's raw error body back to the client — it can
+      // contain request context. The parent only sees a generic message.
       const detail = await r.text().catch(() => "");
-      return json(502, { error: "The AI service is temporarily unavailable.", detail: detail.slice(0, 300) });
+      console.error("ai-proxy upstream error", r.status, detail.slice(0, 300));
+      return json(502, { error: "The AI service is temporarily unavailable." });
     }
     const data = await r.json();
     const text = scrub((data.content || []).map((b) => b.text || "").join("").trim());
