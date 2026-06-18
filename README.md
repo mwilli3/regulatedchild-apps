@@ -49,7 +49,12 @@ to verify against). That is the correct fail-closed behavior, not a bug.
 - `netlify/functions/verify-purchase.js` — queries the TRC Shopify Orders API by
   email; maps product id (`workbook`/`decoder` -> `DECODER_PRODUCT_TITLE`,
   `research`/`scripts` -> `SCRIPTS_PRODUCT_TITLE`). CORS origin
-  `https://apps.regulatedchild.com`.
+  `https://apps.regulatedchild.com`. Rate-limited 30 req/hr/IP.
+- `netlify/functions/delete-purchase.js` — operator-run GDPR/CCPA erasure.
+  Bearer-auth (`ADMIN_DELETE_TOKEN`); deletes the email from the Netlify Blobs
+  `purchases` allowlist and best-effort queues a Klaviyo profile deletion. Not a
+  public endpoint. The paid apps also expose a client-side "Clear my data on this
+  device" button that wipes the local `bdw-*` / `rr-*` keys and access token.
 
 ### Environment variables (Netlify, TRC site) — names the functions read
 
@@ -61,6 +66,7 @@ Match these character-for-character:
 - `SHOPIFY_ACCESS_TOKEN` (TRC store Admin API token, `read_orders`)
 - `DECODER_PRODUCT_TITLE` (exact Shopify product title for the Workbook)
 - `SCRIPTS_PRODUCT_TITLE` (exact Shopify product title for the Scripts Pack)
+- `ADMIN_DELETE_TOKEN` (long random secret; bearer token for `delete-purchase`)
 
 ## Open TODOs (need a human / real data)
 
