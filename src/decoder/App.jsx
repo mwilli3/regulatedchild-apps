@@ -1191,7 +1191,7 @@ export default function BehaviorDecoderWorkbook() {
       "Anthropic does not train models on this data. They may retain it for up to 30 days for abuse monitoring. We’re currently pursuing a Zero Data Retention agreement that would eliminate this 30-day window.",
       "If our system detects language suggesting abuse, self-harm, or a child in immediate danger, the response will surface crisis-appropriate guidance instead of the usual analysis.",
     ],
-    privacyUrl: "https://regulatedchild.com/policies/privacy-policy",
+    privacyUrl: "https://regulatedchild.com/pages/app-privacy-policy",
   });
 
   useEffect(() => {
