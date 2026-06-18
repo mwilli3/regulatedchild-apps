@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { clearLocalData } from "../lib/clearData";
+import { readLocal } from "../lib/clearData";
+import { ManageData } from "../lib/ManageData";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -790,11 +791,19 @@ export default function ScriptsPackResearch() {
           <ArcLogo size={20} />
           <a href="https://www.tiktok.com/@regulatedchild" target="_blank" rel="noopener" style={{ fontSize: 13, color: C.brand, textDecoration: "none", fontWeight: 600, fontFamily: UI, display: "block", marginTop: 8 }}>@regulatedchild</a>
           <p style={{ fontSize: 11, color: C.cite, fontStyle: "italic", marginTop: 8, fontFamily: UI }}>Educational content, not clinical advice. © The Regulated Child · regulatedchild.com</p>
-          <button onClick={async () => {
-            if (!confirm("This permanently clears your saved progress and sign-in on this device. Your purchase is not affected — you can sign back in with your email. Continue?")) return;
-            await clearLocalData(["rr-script-worked", "rc-access-research"]);
-            location.reload();
-          }} style={{ marginTop: 16, background: "none", border: "none", color: C.cite, fontSize: 11, fontFamily: UI, textDecoration: "underline", cursor: "pointer" }}>Clear my data on this device</button>
+          <ManageData
+            C={C} DISPLAY={DISPLAY} UI={UI} EASE={EASE}
+            kicker="In-the-Moment Scripts"
+            intro="Everything you’ve tracked in the scripts pack lives only in this browser. Nothing is sent to our servers except the AI analysis you explicitly request. Wiping is permanent."
+            getRows={async () => {
+              const worked = await readLocal("rr-script-worked");
+              const n = Array.isArray(worked) ? worked.length : 0;
+              return [
+                { label: "Scripts marked as effective", value: n ? `${n} ${n === 1 ? "script" : "scripts"}` : "empty" },
+              ];
+            }}
+            deleteKeys={["rr-script-worked"]}
+          />
         </div>
       </div>
     </div>

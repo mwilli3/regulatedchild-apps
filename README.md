@@ -53,8 +53,10 @@ to verify against). That is the correct fail-closed behavior, not a bug.
 - `netlify/functions/delete-purchase.js` — operator-run GDPR/CCPA erasure.
   Bearer-auth (`ADMIN_DELETE_TOKEN`); deletes the email from the Netlify Blobs
   `purchases` allowlist and best-effort queues a Klaviyo profile deletion. Not a
-  public endpoint. The paid apps also expose a client-side "Clear my data on this
-  device" button that wipes the local `bdw-*` / `rr-*` keys and access token.
+  public endpoint. The paid apps also expose a client-side "Manage my data"
+  modal (`src/lib/ManageData.jsx`) that shows live counts and wipes the local
+  `bdw-*` / `rr-*` content keys. It intentionally preserves the `rc-access-*`
+  purchase/unlock token, so a wipe never forces the buyer to re-verify.
 
 ### Environment variables (Netlify, TRC site) — names the functions read
 

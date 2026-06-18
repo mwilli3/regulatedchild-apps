@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { clearLocalData } from "../lib/clearData";
+import { readLocal } from "../lib/clearData";
+import { ManageData } from "../lib/ManageData";
 
 /* ── Design tokens (OKLCH, brand hues preserved) ───────────────────── */
 const C = {
@@ -1276,11 +1277,26 @@ export default function BehaviorDecoderWorkbook() {
           <ArcLogo size={20} />
           <a href="https://www.tiktok.com/@regulatedchild" target="_blank" rel="noopener" style={{ fontSize: 12, color: C.brand, textDecoration: "none", fontWeight: 600, fontFamily: UI, display: "block", marginTop: 8 }}>@regulatedchild</a>
           <p style={{ fontSize: 10, color: C.cite, fontStyle: "italic", marginTop: 6 }}>Educational content, not clinical advice. © The Regulated Child · regulatedchild.com</p>
-          <button onClick={async () => {
-            if (!confirm("This permanently clears your saved entries and sign-in on this device. Your purchase is not affected — you can sign back in with your email. Continue?")) return;
-            await clearLocalData(["bdw-tracker", "bdw-reflections", "bdw-signature", "bdw-clock", "rc-access-workbook"]);
-            location.reload();
-          }} style={{ marginTop: 16, background: "none", border: "none", color: C.cite, fontSize: 11, fontFamily: UI, textDecoration: "underline", cursor: "pointer" }}>Clear my data on this device</button>
+          <ManageData
+            C={C} DISPLAY={DISPLAY} UI={UI} EASE={EASE}
+            kicker="Behavior Decoder Workbook"
+            intro="Everything you’ve tracked in the workbook lives only in this browser. Nothing is sent to our servers except the AI analysis you explicitly request. Wiping is permanent."
+            getRows={async () => {
+              const tracker = await readLocal("bdw-tracker");
+              const n = Array.isArray(tracker) ? tracker.filter(r => r && (r.behavior || r.before)).length : 0;
+              const sig = await readLocal("bdw-signature");
+              const refl = await readLocal("bdw-reflections");
+              const clock = await readLocal("bdw-clock");
+              const anyText = (o) => o && typeof o === "object" && Object.values(o).some(v => typeof v === "string" && v.trim());
+              const clockSaved = clock && (((clock.notes || "").trim()) || (clock.slots || []).some(s => s && s.zone));
+              const otherSaved = anyText(sig) || anyText(refl) || clockSaved;
+              return [
+                { label: "Behavior tracker entries", value: n ? `${n} ${n === 1 ? "entry" : "entries"}` : "empty" },
+                { label: "State signature, reflections & clock", value: otherSaved ? "saved" : "empty" },
+              ];
+            }}
+            deleteKeys={["bdw-tracker", "bdw-reflections", "bdw-signature", "bdw-clock"]}
+          />
         </div>
       </div>
     </div>

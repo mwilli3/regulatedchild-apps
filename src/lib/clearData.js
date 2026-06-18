@@ -16,3 +16,20 @@ export async function clearLocalData(keys) {
     } catch {}
   }
 }
+
+// Reads + JSON-parses a key from the window.storage bridge (preferred) or
+// localStorage. Used by the "Manage my data" modal to show live counts of what
+// will be deleted. Returns null when absent or unparseable.
+export async function readLocal(key) {
+  try {
+    if (window.storage?.get) {
+      const r = await window.storage.get(key);
+      if (r?.value) return JSON.parse(r.value);
+    }
+  } catch {}
+  try {
+    const s = localStorage.getItem(key);
+    if (s) return JSON.parse(s);
+  } catch {}
+  return null;
+}
