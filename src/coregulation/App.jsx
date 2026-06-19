@@ -456,10 +456,6 @@ function Done() {
               <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 4 }}>In-the-Moment Scripts Pack</div>
               <div style={{ fontFamily: UI, fontSize: 14, color: C.muted, lineHeight: 1.55 }}>20 specific phrases for the most common dysregulation moments. Comment <strong>SCRIPTS</strong> on @regulatedchild.</div>
             </div>
-            <div style={{ padding: "18px 20px", borderTop: `1px solid ${C.line}` }}>
-              <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 4 }}>The Regulated Child Course</div>
-              <div style={{ fontFamily: UI, fontSize: 14, color: C.muted, lineHeight: 1.55 }}>The complete six-pillar framework. Visit <strong>regulatedchild.com</strong></div>
-            </div>
           </div>
         </section>
 

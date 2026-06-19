@@ -379,7 +379,6 @@ function Done() {
     { title: "Behavior Decoder", desc: "A one-page visual mapping common behaviors to the nervous system state driving them. Comment DECODE on @regulatedchild.", label: "Decode" },
     { title: "Co-Regulation Guide", desc: "The five-step co-regulation protocol with scripts for each step. Comment REGULATE on @regulatedchild.", label: "Regulate" },
     { title: "In-the-Moment Scripts Pack", desc: "20 specific phrases and protocols for the most common dysregulation patterns. Comment SCRIPTS on @regulatedchild.", label: "Scripts" },
-    { title: "The Regulated Child Course", desc: "The complete six-pillar framework. Visit regulatedchild.com", label: "Course" },
   ];
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: UI, color: C.text }}>
