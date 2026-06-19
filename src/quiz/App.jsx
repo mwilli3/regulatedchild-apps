@@ -190,7 +190,6 @@ const profiles = {
     ctas: [
       { label: "REGULATE", text: "Comment on any @regulatedchild video for the Co-Regulation Guide, including a section on sensory-seeking profiles." },
       { label: "SCRIPTS", text: "Comment for the In-the-Moment Scripts Pack, including de-escalation language for high-activation moments." },
-      { label: "Course", text: "The Regulated Child course, Module 2 (Reading the Body) goes deep on sensory processing and regulation. regulatedchild.com" },
     ],
   },
   sr: {
@@ -218,7 +217,6 @@ const profiles = {
     ctas: [
       { label: "BODY", text: "Comment on any @regulatedchild video for the Body Behind the Behavior PDF, which covers the window of tolerance in detail." },
       { label: "REGULATE", text: "Comment for the Co-Regulation Guide, including the body-states reference and five-step protocol." },
-      { label: "Course", text: "The Regulated Child course, Module 4 (The Regulated Home) covers environment design specifically for this profile. regulatedchild.com" },
     ],
   },
   sto: {
@@ -244,7 +242,6 @@ const profiles = {
     ctas: [
       { label: "DECODE", text: "Comment on any @regulatedchild video for the Behavior Decoder, which maps the meltdown arc and stage timing." },
       { label: "SCRIPTS", text: "Comment for the In-the-Moment Scripts Pack, including scripts for the extended recovery window." },
-      { label: "Course", text: "The Regulated Child course, Module 1 (The Science of Regulation) covers the dysregulation arc in full detail. regulatedchild.com" },
     ],
   },
 };
